@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const fetch = require('node-fetch');
+const dotenv = require('dotenv');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,28 +14,36 @@ module.exports = {
     async run({ client, interaction }) {
         try {
 
+            //Cargar las Variables
+            dotenv.config({ path: './config/.env' });
+
             //Datos Usuario
             const { user: author } = interaction;
             const userMention = `<@${author.id}>`;
 
-            //Verificacion ID Developer
-            const rolDeveloper = '432215088686956565';
-            if (interaction.user.id !== rolDeveloper) {
-                await interaction.editReply({ content: 'No tienes permisos para usar este comando', ephemeral: true });
-                return;
-            };
+            //Verificar Rol Desarrollador
+            const ID = process.env.IDOwner;
+
+            const rolDeveloper = `${ID}`;
+            if (interaction.user.id !== rolDeveloper) return interaction.editReply('Solo mi creador puede usar este comando!.');
 
             //Verificacion carga archivo
             const bannerAttachment = interaction.options.getAttachment('banner');
-            if (!bannerAttachment || !bannerAttachment.contentType.startsWith("image/")) {
-                await interaction.editReply({ content: 'Por favor, introduce un archivo valido (JPG, PNG, GIF)', ephemeral: true });
-                return;
-            };
+            if (!bannerAttachment || !bannerAttachment.contentType.startsWith("image/")) return interaction.editReply('Por favor, introduce un archivo valido (JPG, PNG, GIF)');
 
-            //Constantes
-            const response = await fetch(bannerAttachment.url);
-            const buffer = await response.buffer();
-            const base64 = await buffer.toString('base64');
+            //Constantes //---->  Throw Errors
+            const response = await fetch(bannerAttachment.url)
+
+            const buffer = await response.buffer().catch(error => {
+                console.error('Hubo un error con el buffer', error);
+                throw error;
+            });;
+
+            const base64 = await buffer.toString('base64').catch(error => {
+                console.error('Hubo un problema con base64', error);
+                throw error;
+            });;
+
             const imageData = `data:${bannerAttachment.contentType};base64,${base64}`;
 
             //Errores Servidor
@@ -56,10 +65,11 @@ module.exports = {
             //Errores Servidor
             if (!patchResponse.ok) {
                 const errorData = await patchResponse.json();
-                throw new Error(errorData.message);
+                throw new Error('Hubo un problema con patchResponse', errorData.message);
             };
 
             await interaction.editReply({ content: `${userMention} El banner del bot ha sido actualizado con exito.` });
+            return;
         } catch (error) {
             await interaction.editReply({ content: 'Hubo un problema al actualizar el banner del bot', ephemeral: true });
             console.log('Hubo un error al cambiar el banner', error);

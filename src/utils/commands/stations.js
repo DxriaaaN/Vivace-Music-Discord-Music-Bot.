@@ -1,15 +1,33 @@
 module.exports = {
 
-    //Radio Sunshine    
-    sunshine: {
-       techno: 'https://sunsl.streamabc.net/sunsl-techno-mp3-192-4912904?sABC=6724294r%231%234p2884rrrqrp676qn3q6s72r58646r31%23ubzrcntr&mode=preroll&aw_0_1st.skey=1730423110&cb=915023278&aw_0_req.userConsentV2=CQGsHIAQGsHIAAFADBDEBMFsAP_gAAAAAAYgIchBxCpUTWEAIXgzAMsAGYAUgAAQAEAQAACAACABABgAIAQAkAAAIAQAAAACAQAAIAABAAAEAAAEBAAAAAAAABDAAAAAgAEIIABAAAAAAAIAAAAAAAAAAAAAAAAREAAAmQAAAEKEAEAAAAAAAAAABAAAAAAFAgMAAAAAAAIQAAAAAgAAAAAAAAIJEQAwAcAMEAkQAWGgAwABBIgRABgACCRAqADAAEEiBkAGAAIJEAoAMAAQSICQAYAAgkQOgAwABBIghABgACCRBKADAAEEiCkAGAAIJEFoAMAAQSIA.YAAAAAAAAAAA&aw_0_1st.playerid=sunshine-live_web&aw_0_1st.1plusxAudience=2,90,2z,2m&listenerid=4c2884eeedec676da3d6f72e58646e31&amsparams=playerid:homepage;skey:1730423118',
-       hardcore: 'https://sunsl.streamabc.net/sunsl-sunslhardcore-mp3-192-4205144?sABC=67242999%231%234p2884rrrqrp676qn3q6s72r58646r31%23ubzrcntr&mode=preroll&aw_0_1st.skey=1730423188&cb=101696738&aw_0_req.userConsentV2=CQGsHIAQGsHIAAFADBDEBMFsAP_gAAAAAAYgIchBxCpUTWEAIXgzAMsAGYAUgAAQAEAQAACAACABABgAIAQAkAAAIAQAAAACAQAAIAABAAAEAAAEBAAAAAAAABDAAAAAgAEIIABAAAAAAAIAAAAAAAAAAAAAAAAREAAAmQAAAEKEAEAAAAAAAAAABAAAAAAFAgMAAAAAAAIQAAAAAgAAAAAAAAIJEQAwAcAMEAkQAWGgAwABBIgRABgACCRAqADAAEEiBkAGAAIJEAoAMAAQSICQAYAAgkQOgAwABBIghABgACCRBKADAAEEiCkAGAAIJEFoAMAAQSIA.YAAAAAAAAAAA&aw_0_1st.playerid=sunshine-live_web&listenerid=4c2884eeedec676da3d6f72e58646e31&aw_0_1st.1plusxAudience=2,90,2z,2m&amsparams=playerid:homepage;skey:1730423193',
-       dnb: 'https://sunsl.streamabc.net/sunsl-drumnbass-mp3-192-9834247?sABC=672429ro%231%234p2884rrrqrp676qn3q6s72r58646r31%23ubzrcntr&mode=preroll&aw_0_1st.skey=1730423270&cb=579976424&aw_0_req.userConsentV2=CQGsHIAQGsHIAAFADBDEBMFsAP_gAAAAAAYgIchBxCpUTWEAIXgzAMsAGYAUgAAQAEAQAACAACABABgAIAQAkAAAIAQAAAACAQAAIAABAAAEAAAEBAAAAAAAABDAAAAAgAEIIABAAAAAAAIAAAAAAAAAAAAAAAAREAAAmQAAAEKEAEAAAAAAAAAABAAAAAAFAgMAAAAAAAIQAAAAAgAAAAAAAAIJEQAwAcAMEAkQAWGgAwABBIgRABgACCRAqADAAEEiBkAGAAIJEAoAMAAQSICQAYAAgkQOgAwABBIghABgACCRBKADAAEEiCkAGAAIJEFoAMAAQSIA.YAAAAAAAAAAA&aw_0_1st.playerid=sunshine-live_web&listenerid=4c2884eeedec676da3d6f72e58646e31&aw_0_1st.1plusxAudience=2,90,2z,2m&amsparams=playerid:homepage;skey:1730423275',
-       '2010s': 'https://sunsl.streamabc.net/sunsl-ssl2010er-mp3-192-5743592?sABC=67242n93%231%234p2884rrrqrp676qn3q6s72r58646r31%23ubzrcntr&mode=preroll&aw_0_1st.skey=1730423439&cb=734651583&aw_0_req.userConsentV2=CQGsHIAQGsHIAAFADBDEBMFsAP_gAAAAAAYgIchBxCpUTWEAIXgzAMsAGYAUgAAQAEAQAACAACABABgAIAQAkAAAIAQAAAACAQAAIAABAAAEAAAEBAAAAAAAABDAAAAAgAEIIABAAAAAAAIAAAAAAAAAAAAAAAAREAAAmQAAAEKEAEAAAAAAAAAABAAAAAAFAgMAAAAAAAIQAAAAAgAAAAAAAAIJEQAwAcAMEAkQAWGgAwABBIgRABgACCRAqADAAEEiBkAGAAIJEAoAMAAQSICQAYAAgkQOgAwABBIghABgACCRBKADAAEEiCkAGAAIJEFoAMAAQSIA.YAAAAAAAAAAA&aw_0_1st.playerid=sunshine-live_web&aw_0_1st.1plusxAudience=2,90,2z,2m&listenerid=4c2884eeedec676da3d6f72e58646e31&amsparams=playerid:homepage;skey:1730423443',
-       house: 'https://sunsl.streamabc.net/sunsl-house-mp3-192-3326799?sABC=67242npr%231%234p2884rrrqrp676qn3q6s72r58646r31%23ubzrcntr&mode=preroll&aw_0_1st.skey=1730423499&cb=410731440&aw_0_req.userConsentV2=CQGsHIAQGsHIAAFADBDEBMFsAP_gAAAAAAYgIchBxCpUTWEAIXgzAMsAGYAUgAAQAEAQAACAACABABgAIAQAkAAAIAQAAAACAQAAIAABAAAEAAAEBAAAAAAAABDAAAAAgAEIIABAAAAAAAIAAAAAAAAAAAAAAAAREAAAmQAAAEKEAEAAAAAAAAAABAAAAAAFAgMAAAAAAAIQAAAAAgAAAAAAAAIJEQAwAcAMEAkQAWGgAwABBIgRABgACCRAqADAAEEiBkAGAAIJEAoAMAAQSICQAYAAgkQOgAwABBIghABgACCRBKADAAEEiCkAGAAIJEFoAMAAQSIA.YAAAAAAAAAAA&aw_0_1st.playerid=sunshine-live_web&aw_0_1st.1plusxAudience=2,90,2z,2m&listenerid=4c2884eeedec676da3d6f72e58646e31&amsparams=playerid:homepage;skey:1730423502',
-    },
-   
-    //Proximas Radios.
-   }
-   
-   
+ //Radio Sunshine    
+ sunshine: {
+    techno: 'https://stream.sunshine-live.de/techno/mp3-192/stream.sunshine-live.de/',
+    hardcore: 'https://stream.sunshine-live.de/hardcore/mp3-192/stream.sunshine-live.de/',
+    dnb: 'https://stream.sunshine-live.de/drum-bass/mp3-192/stream.sunshine-live.de/',
+    '2010s': 'https://stream.sunshine-live.de/2010s/mp3-192/stream.sunshine-live.de/',
+    house: 'https://stream.sunshine-live.de/house/mp3-192/stream.sunshine-live.de/',
+    trance: 'https://stream.sunshine-live.de/trance/mp3-192/stream.sunshine-live.de/',
+    edm: 'https://stream.sunshine-live.de/edm/mp3-192/stream.sunshine-live.de/',
+    eurodance: 'https://stream.sunshine-live.de/eurodance/mp3-192/stream.sunshine-live.de/',
+    classics: 'https://stream.sunshine-live.de/classics/mp3-192/stream.sunshine-live.de/',
+    melodic: 'https://stream.sunshine-live.de/melodic-techno/mp3-192/stream.sunshine-live.de/',
+ },
+
+ //Radio FallOut 
+ fallout: {
+   'Main Station': 'https://fallout.fm:8444/falloutfm1.ogg',
+   'fallout76 classical': 'https://fallout.fm:8444/falloutfm9.ogg',
+   'fallout76 general': 'https://fallout.fm:8444/falloutfm10.ogg',
+   'fallout4 classical': 'https://fallout.fm:8444/falloutfm7.ogg',
+   'fallout4 diamond city': 'https://fallout.fm:8444/falloutfm6.ogg',
+   'fallout4 mwtcf': 'https://fallout.fm:8444/falloutfm8.ogg',
+   'fallout3 galaxy news': 'https://fallout.fm:8444/falloutfm2.ogg',
+   'fallout new vegas': 'https://fallout.fm:8444/falloutfm3.ogg',
+   'fallout2 ost': 'https://fallout.fm:8444/falloutfm4.ogg',
+   'fallout1 ost': 'https://fallout.fm:8444/falloutfm5.ogg',
+ },
+
+ //Proximas Radios.
+}
+

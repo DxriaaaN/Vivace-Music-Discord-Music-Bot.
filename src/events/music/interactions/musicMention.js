@@ -1,37 +1,20 @@
 const { useQueue } = require('discord-player');
-const musicSchema = require('../../../functions/database/schemas/musicSchema');
+const musicSchema = require('../../../functions/database/models/musicSchema');
 const dotenv = require('dotenv');
 
 module.exports = (client) => {
 
     client.on('messageCreate', async (message) => {
 
-        //Prefix del Bot
-        dotenv.config({ path: './config/.env' });
-        const prefix = process.env.prefix
-
-        //Ajustes Usuario y Cliente
+        //Verificacion Mencion BOT
         const botMention = message.mentions.users.has(client.user.id);
+        if (!(botMention)) return;
 
-        //Ajustes para las Guild
-        const allSettings = await musicSchema.find();
-        const guildSettings = allSettings.find(guild => guild.guildId === message.guild.id);
-        const musicSearchChannelId = guildSettings?.musicSearchChannelId; 
-
-        //Verificacion Bot o No Mencion
+        //Filtrar Menciones BOT || Filtrar Mensajes Vacios
         if (message.author.bot || !message.content) return;
 
-        if (!(botMention || message.content.startsWith(prefix))) return;
-
-        //Verificacion Undefined Channel
-        if (!musicSearchChannelId) {
-            console.log('No hay una configuracion establecida de canal.')
-            return;
-        }
-
-        //Ignorar music-search
-        if (message.channel.id === musicSearchChannelId) return;
-
+        //Se llama a BD, para que busque segun parametros establecidos.
+        const allSettings = await musicSchema.find();
 
         //Proxima Expansion Radio System
 
@@ -41,7 +24,7 @@ module.exports = (client) => {
         //Canciones y Playlist MusicYT && Youtube. Incluido Telefono y Shorts.
         const urlPatternsYT = [
             { regex: /https?:\/\/(?:www\.)?youtube\.com\/watch\?(?!.*music\.youtube\.com)\S+/, type: 'youtube', subcommand: 'cancion' }, //YT Song
-            { regex: /https?:\/\/(?:www\.)?youtube\.com\/playlist\?(?!.*music\.youtube\.com)list=\S+/, type: 'youtube', subcommand: 'playlist' }, //YT Playlist
+            { regex: /https?:\/\/(?:www\.)?youtube\.com\/playlist\?(?!.*music\.youtube\.com)list=\S+/, type: 'youtubeplay', subcommand: 'playlist' }, //YT Playlist
             { regex: /https?:\/\/music\.youtube\.com\/watch\?v=\S+/, type: 'youtube-music', subcommand: 'musiccancion' }, //YT Music Song
             { regex: /https?:\/\/(?:www\.)?(?:music\.)?youtube\.com\/playlist\?list=\S+/, type: 'youtube-music', subcommand: 'musicplaylist' }, //YT Music Playlist
             { regex: /https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)/, type: 'youtube', subcommand: 'youtube-corto' },   //YT Enlaces Telefono
@@ -60,7 +43,11 @@ module.exports = (client) => {
                 const videoId = message.content.match(urlMatchYT.regex)[1]; // Obtener ID del video
                 url = `https://www.youtube.com/watch?v=${videoId}`; // Convertirlo a URL completa
             };
-
+            /*
+            if (type === 'youtube') {
+                url = url.replace(/&list=[^&]+.*$/, ""); // Elimina el Mix u otros parámetros extra
+            };
+			*/
             //Ejecucion Play.js
             const playCommand = client.musicacommands.get('play');
             if (playCommand) {
@@ -87,7 +74,6 @@ module.exports = (client) => {
                 return;
             };
         };
-
 
 
         //Busqueda Canciones && Playlist Spotify
@@ -136,22 +122,20 @@ module.exports = (client) => {
             };
         };
 
-        //Busqueda Canciones, Playlist y Album Apple
-        const urlPatternsAppleSoundcloud = [
+        //Busqueda Canciones, Playlist y Album Apple (Fuera de Servicio)
+        /*
+        const urlPatternsApple = [
             { regex: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+\?i=\d+.*$/i , type: 'apple-song', subcommand: 'cancion' }, //Apple Song
             { regex: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+.*$/i, type: 'apple-album', subcommand: 'cancion' }, //Apple Album
             { regex: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?playlist\/[^\/]+\/[a-zA-Z0-9.\-]+.*$/i , type: 'apple-playlist', subcommand: 'cancion' }, //Apple Playlist
-           
-            { regex: /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/[^\/]+(?:\?.*)?$/i, type: 'soundcloud-song', subcommand: 'cancion' }, //SoundCloud Song
-            { regex: /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/sets\/[^\/]+(?:\?.*)?$/i, type: 'soundcloud-playlist-album', subcommand: 'cancion' }//SoundCloud Playlist/Album
         ];
 
         //Comprobacion Links y Ejecucion Acorde
-        const urlMatchAppleSoundcloud = urlPatternsAppleSoundcloud.find(pattern => pattern.regex.test(message.content));
+        const urlMatchApple = urlPatternsApple.find(pattern => pattern.regex.test(message.content));
 
 
-        if (urlMatchAppleSoundcloud) {
-            let url = message.content.match(urlMatchAppleSoundcloud.regex)[0];
+        if (urlMatchApple) {
+            let url = message.content.match(urlMatchApple.regex)[0];
             url = url.replace(/\/intl-\w{2}\//, '/');
 
             // Ejecutar el comando 'play'
@@ -160,6 +144,53 @@ module.exports = (client) => {
                 const fakeInteraction = {
                     options: {
                         getString: () => url
+                    },
+                    id: message.id,
+                    guildId: message.guild.id,
+                    member: message.member,
+                    guild: message.guild,
+                    channel: message.channel,
+                    user: message.author,
+                    reply: ({ content }) => message.channel.send(content),
+                    followUp: ({ content }) => message.channel.send(content),
+                    deferReply: () => Promise.resolve(),
+                    editReply: ({ embeds }) => message.channel.send({ embeds })
+                };
+
+                try {
+                    await playCommand.run({ client, interaction: fakeInteraction });
+                } catch (error) {
+                    console.error('Ocurrio un error al ejecutar el evento de play', error);
+                    return;
+                }
+                return;
+            };
+        };
+        */
+
+        //Busqueda Canciones, Playlist y Album SoundCloud
+        const urlPatternsSoundcloud = [
+            { regex: /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/[^\/]+(?:\?.*)?$/i, type: 'soundcloud-song', subcommand: 'cancion' }, //SoundCloud Song
+            { regex: /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/sets\/[^\/]+(?:\?.*)?$/i, type: 'soundcloud-playlist-album', subcommand: 'cancion' }//SoundCloud Playlist/Album
+        ];
+
+        //Comprobacion Links y Ejecucion Acorde
+        const urlMatchSoundcloud = urlPatternsSoundcloud.find(pattern => pattern.regex.test(message.content));
+
+
+        if (urlMatchSoundcloud) {
+            let url = message.content.match(urlMatchSoundcloud.regex)[0];
+            url = url.replace(/\/intl-\w{2}\//, '/');
+            //Eliminar parametros ?utm= etc
+            const urlFix = url.split('?')[0];
+            console.log(urlFix);
+
+            // Ejecutar el comando 'play'
+            const playCommand = client.musicacommands.get('play');
+            if (playCommand) {
+                const fakeInteraction = {
+                    options: {
+                        getString: () => urlFix
                     },
                     id: message.id,
                     guildId: message.guild.id,

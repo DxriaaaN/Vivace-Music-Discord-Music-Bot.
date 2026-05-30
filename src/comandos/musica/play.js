@@ -1,7 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, VoiceChannel } = require('discord.js');
 const { Track, QueryType, useMainPlayer, useQueue } = require('discord-player');
-const ytsr = require('youtube-sr').default;
+const { getUrlSpotify } = require('../../utils/commands/triggers/getUrlInfo');
+const { Result } = require('@sapphire/shapeshift');
+const { state } = require('../../utils/client/mutedState');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -16,12 +19,12 @@ module.exports = {
 
         try {
             // Variables iniciales
-            const MAX_QUEUE_SIZE = 1000;
+            // const MAX_QUEUE_SIZE = 1000;
             const player = useMainPlayer();
             const userVoiceChannel = interaction.member.voice.channel;
             const queue = useQueue(interaction.guildId);
             const { user: author } = interaction;
-            const guildId = interaction.guildId
+            // const guildId = interaction.guildId
             const userMention = `<@${author.id}>`;
 
             // Verificar que el usuario esté en un canal de voz
@@ -65,7 +68,7 @@ module.exports = {
             if (botVoiceChannel && botVoiceChannel.id !== userVoiceChannel.id) {
                 if (!queue || !queue.isPlaying() || queue.tracks.size === 0) {
                     await interaction.guild.members.me.voice.disconnect();
-                    await player.node.join(userVoiceChannel);
+                    await player.voiceUtils.join(userVoiceChannel);
                 } else {
                     return interaction.editReply({
                         embeds: [new EmbedBuilder()
@@ -75,6 +78,12 @@ module.exports = {
                             .setTimestamp()]
                     });
                 }
+            }
+
+            // Al inicio del comando, antes de cualquier lógica
+            if (state.isMuted) {
+                await player.voiceUtils.join(userVoiceChannel);
+                return interaction.channel.send('🔇 Estoy muteado en el servidor. Esperá a que un moderador me desmutee.');
             }
 
 
@@ -87,21 +96,25 @@ module.exports = {
             const msg = await interaction.editReply({ embeds: [embed], fetchReply: true });
 
             try {
-                //DEFINICION GLOBAL
+                // Identificadores de Enlaces (Origen)
+
                 // Definir la expresión regular para enlaces
                 const linkRegex = /^(http|https):\/\/[^ "]+$/;
 
-                //YoutubeMix
-                const youtubeMixRegex = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[^&]+&list=RD[^&]+(&|$)/;
+                //YoutubeMix (Nativo de Youtubei, se mantiene el regex por si hay cambios en Youtube)
+                // const youtubeMixRegex = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[^&]+&list=RD[^&]+(&|$)/;
 
-                //SoundCloud
-                const soundcloudTrackRegex = /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/[^\/]+(?:\?.*)?$/i;
-                const soundcloudPlaylistRegex = /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/sets\/[^\/]+(?:\?.*)?$/i;
+                //SoundCloud (Fuera de Servicio por cambios en SoundCloud, se mantiene el regex por si vuelven a funcionar)
+                // const soundcloudTrackRegex = /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/[^\/]+(?:\?.*)?$/i;
+                // const soundcloudPlaylistRegex = /^https?:\/\/(www\.)?soundcloud\.com\/[^\/]+\/sets\/[^\/]+(?:\?.*)?$/i;
 
-                //Apple
-                const appleSong = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+\?i=\d+.*$/i;
-                const appleAlbum = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+.*$/i;
-                const applePlaylist = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?playlist\/[^\/]+\/[a-zA-Z0-9.\-]+.*$/i;
+                //Apple (Fuera de Servicio por cambios en Apple Music, se mantiene el regex por si vuelven a funcionar)
+                // const appleSong = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+\?i=\d+.*$/i;
+                // const appleAlbum = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?album\/[^\/]+\/\d+.*$/i;
+                // const applePlaylist = /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-zA-Z]{2,3}\/)?playlist\/[^\/]+\/[a-zA-Z0-9.\-]+.*$/i;
+
+                //Spotify
+                const spotifySongs = /^https?:\/\/(?:www\.)?open\.spotify\.com\/(?:intl-\w{2}\/|intl-es\/)?(?:track\/\S+|playlist\/\S+|album\/\S+)/;
 
                 let research;
 
@@ -157,112 +170,147 @@ module.exports = {
                         research.tracks = [choices[0]];
                     }
                 } else { //MANEJADOR DE ENLACES UNICAMENTE.
-                    try{
-
-                    // Si es un enlace, determinar el 'searchEngine' POR DEFAULT.
-                    let searchEngine = QueryType.AUTO;
-
-
-                    //Soundcloud Music
                     try {
-                        if (soundcloudTrackRegex.test(song)) {
-                            searchEngine = QueryType.SOUNDCLOUD_TRACK;
-                        } else if (soundcloudPlaylistRegex.test(song)) {
-                            searchEngine = QueryType.SOUNDCLOUD_PLAYLIST;
+
+                        // Si es un enlace, determinar el 'searchEngine' POR DEFAULT.
+                        let searchEngine = QueryType.AUTO;
+
+
+                        /*
+                        //Soundcloud Music (Fuera de Servicio Extractor Roto)
+                            try {
+                                if (soundcloudTrackRegex.test(song)) {
+                                    searchEngine = QueryType.SOUNDCLOUD_TRACK;
+                                } else if (soundcloudPlaylistRegex.test(song)) {
+                                    searchEngine = QueryType.SOUNDCLOUD_PLAYLIST;
+                                }
+                            } catch (error) {
+                                return message.channel.send('Reproduce/Agrega una cancion antes de iniciar la reproduccion de Soundcloud.');
+                            }
+                            */
+
+                        /*
+                        //Apple Music (Fuera de Servicio Extractor Roto)
+                        if (appleSong.test(song)) {
+                            searchEngine = QueryType.APPLE_MUSIC_SONG;
+                        } else if (appleAlbum.test(song)) {
+                            searchEngine = QueryType.APPLE_MUSIC_ALBUM;
+                        } else if (applePlaylist.test(song)) {
+                            searchEngine = QueryType.APPLE_MUSIC_PLAYLIST;
                         }
-                    } catch (error) {
-                        return message.channel.send('Reproduce/Agrega una cancion antes de iniciar la reproduccion de Soundcloud.');
-                    }
+                        */
 
-                    //Apple Music
-                    if (appleSong.test(song)) {
-                        searchEngine = QueryType.APPLE_MUSIC_SONG;
-                    } else if (appleAlbum.test(song)) {
-                        searchEngine = QueryType.APPLE_MUSIC_ALBUM;
-                    } else if (applePlaylist.test(song)) {
-                        searchEngine = QueryType.APPLE_MUSIC_PLAYLIST;
-                    }
-
-                    //Youtube Mix
-                    if (youtubeMixRegex.test(song)) {
-
-                        const playlist = await ytsr.getPlaylist(song);
-                        //console.log(playlist)
-                        if (!playlist) {
+                        // Realizar la búsqueda con el 'searchEngine' DEFAULT EN CASO DE NO CUMPLIRSE LOS ANTERIORES.
+                        research = await player.search(song, {
+                            requestedBy: interaction.member,
+                            searchEngine: searchEngine,
+                        });
+                        //Si no se pudo encontrar con ninguno de los dos metodos anteriores.
+                        if (!research.hasTracks()) {
                             embed = new EmbedBuilder()
                                 .setColor(parseInt('313850', 16))
-                                .setDescription('No se pudo encontrar la lista de Mix en YouTube')
-                                .setFooter({ text: client.user.username, iconURL: client.user.displayAvatarURL() })
+                                .setDescription('No pude encontrar lo que me pediste')
+                                .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
                                 .setTimestamp();
                             await msg.edit({ embeds: [embed] });
                             return;
                         }
-
-                        let trackCount = 0
-
-                        // Crear y agregar cada pista individualmente
-                            for (const video of playlist.videos) {
-                                const track = new Track(player, {
-                                    id: video.id,
-                                    title: video.title,
-                                    duration: video.durationFormatted,
-                                    thumbnail: video.thumbnail.url,
-                                    author: video.channel.name,
-                                    requestedBy: interaction.user,
-                                    source: 'youtube',
-                                    url: `https://www.youtube.com/watch?v=${video.id}`
-                                });
-                                // Reproducir la canción o agregarla a la cola
-                                if (!queue || !queue.isPlaying() || queue.tracks.size === 0){
-                                const queue = player.queues.create(guildId)
-                                await queue.connect(userVoiceChannel)
-                                queue.addTrack(track);
-                                trackCount++;
-                                } else {
-                                    queue.addTrack(track);
-                                    trackCount++;
-                                }
-                            }
-
-                        embed = new EmbedBuilder()
-                            .setColor(parseInt('313850', 16))
-                            .setDescription(`Se añadieron ${trackCount} canciones del Mix de YouTube a la cola.`)
-                            .setFooter({ text: client.user.username, iconURL: client.user.displayAvatarURL() })
-                            .setTimestamp();
-                        await msg.edit({ embeds: [embed] });
+                    } catch (error) {
+                        console.log(error);
                     }
-
-                    // Realizar la búsqueda con el 'searchEngine' DEFAULT EN CASO DE NO CUMPLIRSE LOS ANTERIORES.
-                    research = await player.search(song, {
-                        requestedBy: interaction.member,
-                        searchEngine: searchEngine,
-                    });
-                    //Si no se pudo encontrar con ninguno de los dos metodos anteriores.
-                    if (!research.hasTracks()) {
-                        embed = new EmbedBuilder()
-                            .setColor(parseInt('313850', 16))
-                            .setDescription('No pude encontrar lo que me pediste')
-                            .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
-                            .setTimestamp();
-                        await msg.edit({ embeds: [embed] });
-                        return;
-                    }
-                } catch (error){
-                    console.log(error);
                 }
-            }
 
-                // Verificar Tamaño de la Cola
+                // Límites de duración y tamaño de cola
+                const MAX_TRACK_DURATION = 3 * 60 * 60; // 3 horas en segundos. DURACION MAXIMA DE VIDEO INDIVIDUAL (BUFFER SIZE Y WATERMARK DINAMICO SEGUN DURACION. // MEMORIA / REFACTORIZAR BD.)
+                const MAX_QUEUE_SIZE = 1000; // LIMITE DE CANCIONES EN LA QUEUE. (MEMORIA / REFACTORIZAR BD POR SERVIDOR (GUILD_ID)) ----> musicSchema (CREACION DE CANAL)
+
+                // Función para convertir duración en formato "HH:MM:SS" o "MM:SS" a segundos  ----> REFACTORIZAR UTILS
+                function convertDurationToSeconds(duration) {
+                    // MANEJAR DURACIONES EN FORMATO "HH:MM:SS", "MM:SS" O "SS"
+                    const parts = duration.split(':').map(Number);
+
+                    if (parts.length === 3) {
+                        // Formato: HH:MM:SS
+                        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                    } else if (parts.length === 2) {
+                        // Formato: MM:SS
+                        return parts[0] * 60 + parts[1];
+                    }
+                    return 0;
+                }
+
+                // Add this check after you get the research result but before playing/adding to queue
+                // Función auxiliar MUY agresiva para reducir memoria
+                const getUltraLowMemoryOptions = (durationStr) => {
+                    const seconds = convertDurationToSeconds(durationStr);
+                    const minutes = seconds / 60;
+
+                    if (minutes > 60) { // Videos >1h
+                        return {
+                            waterMark: 1 << 24, // 1MB
+                            buffering: 35000,   // 10 segundos
+                            volume: 50
+                        };
+                    } else if (minutes > 30) { // Videos >30min
+                        return {
+                            waterMark: 1 << 28, // 2MB
+                            buffering: 35000,   // 15 segundos
+                            volume: 50
+                        };
+                    } else if (minutes > 10) { // Videos >5min
+                        return {
+                            waterMark: 1 << 30, // 4MB
+                            buffering: 35000,   // 25 segundos
+                            volume: 50
+                        };
+                    }
+
+                    return {
+                        waterMark: 1 << 22, // 4MB para videos cortos
+                        buffering: 30000,   // 30 segundos
+                        volume: 50
+                    };
+                };
+
+                if (research && research.tracks) {
+                    // Filter out tracks that exceed the duration limit
+                    const filteredTracks = research.tracks.filter(track => {
+                        const durationInSeconds = convertDurationToSeconds(track.duration);
+                        return durationInSeconds <= MAX_TRACK_DURATION;
+                    }).map(track => {
+                        const options = getUltraLowMemoryOptions(track.duration);
+                        track._dynamicWaterMark = options.waterMark;
+                        track._bufferingTimeout = options.buffering;
+                        track._volume = options.volume;
+                        return track;
+                    });
+
+                    if (filteredTracks.length === 0 && research.tracks.length > 0) {
+                        return await msg.edit({
+                            embeds: [new EmbedBuilder()
+                                .setColor(parseInt('313850', 16))
+                                .setDescription('Lo siento, no pude encontrar lo que buscaste o el video supera las 3H')
+                                .setTimestamp()
+                                .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
+                            ]
+                        });
+                    }
+                    // Update research with filtered tracks
+                    research.tracks = filteredTracks;
+                }
+
+                
                 if (research?.tracks?.length + (queue?.size ?? 0) > MAX_QUEUE_SIZE) {
                     return await msg.edit({
                         embeds: [new EmbedBuilder()
                             .setColor(parseInt('313850', 16))
-                            .setDescription(`No puedo reproducir algo superior a: ${MAX_QUEUE_SIZE} Canciones`)
+                            .setDescription(`No puedo agregar mas de ${MAX_QUEUE_SIZE} canciones de una playlist.`)
                             .setTimestamp()
                             .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
                         ]
                     });
                 }
+
                 // Reproducir la canción o agregarla a la cola
                 const res = await player.play(interaction.member.voice.channel.id, research, {
                     nodeOptions: {
@@ -274,13 +322,17 @@ module.exports = {
                         },
                         volume: 50,
                         maxSize: MAX_QUEUE_SIZE,
-                        bufferingTimeout: 15000,
+                        bufferingTimeout: research.tracks?.[0]?._bufferingTimeout || 25000, // MUY reducido
+                        highWaterMark: research.tracks?.[0]?._dynamicWaterMark || 1 << 22, // 2MB por defecto
                         leaveOnStop: true,
                         leaveOnStopCooldown: 0,
-                        leaveOnEnd: false,
+                        leaveOnEnd: true,
+                        leaveOnEndCooldown: 60000,
                         leaveOnEmpty: true,
-                        leaveOnEmptyCooldown: 200000,
+                        leaveOnEmptyCooldown: 60000,
                         skipOnNoStream: true,
+                        disableVolume: false,
+                        smoothVolume: true
                     },
 
                 })
@@ -301,26 +353,44 @@ module.exports = {
                         .setDescription(`Reproduciendo desde: [${song === radioUrls[0] ? 'Truckers FM' : 'Trance FM'}]`)
                         .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
                         .setTimestamp();
-                } else {
+                }
+                else if (spotifySongs.test(song)) {
+
+                    const infoUrl = await getUrlSpotify(song);
+                    res.track.thumbnail = infoUrl.image;
                     embed = new EmbedBuilder()
                         .setColor(parseInt('313850', 16))
                         .setTitle(`${!queue?.currentTrack ? 'Ahora estoy reproduciendo' : 'Canción agregada a la lista'}`)
                         .setThumbnail(res.track.thumbnail)
-                        .setDescription(`[${res.track.title}](${res.track.url})`)
+                        .setDescription(`[${res.track.title}](${res.track.url})\n${res.track.author}`)
+                        .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
+                        .setTimestamp();
+                }
+                else {
+                    embed = new EmbedBuilder()
+                        .setColor(parseInt('313850', 16))
+                        .setTitle(`${!queue?.currentTrack ? 'Ahora estoy reproduciendo' : 'Canción agregada a la lista'}`)
+                        .setThumbnail(res.track.thumbnail)
+                        .setDescription(`[${res.track.title}](${res.track.url})\n${res.track.author}`)
                         .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
                         .setTimestamp();
                 }
 
+                // Playlist/Album encontrado
                 if (res.searchResult?.playlist) {
                     embed
-                        .setTitle('Playlist/Álbum encontrado ❤️')
+                        .setTitle('Playlist/Álbum Encontrado ')
                         .setColor(parseInt('313850', 16))
+                        .setThumbnail(res?.searchResult?.playlist?.thumbnail || res?.track.thumbnail || 'https://imgur.com/diFr6ky.png')
+                        .setDescription(`Se agregaron con exito las canciones.`)
                         .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
-                        .addFields({ name: 'Título:', value: `[${res.searchResult.playlist.title}](${res.searchResult.playlist.url})` });
+                        .addFields(
+                            { name: 'Primera Cancion: ', value: `${res?.searchResult?.playlist?.tracks[0]?.title} - ${res?.searchResult?.playlist?.tracks[0]?.author}` },
+                            { name: 'Título:', value: `[${res.searchResult.playlist.title}](${res.searchResult.playlist.url})` }
+                        );
                 }
 
                 await msg.edit({ embeds: [embed] });
-
             } catch (error) {
                 console.error(error);
                 return await msg.edit({
@@ -333,9 +403,20 @@ module.exports = {
                 });
             }
         } catch (error) {
-            console.error('Error al ejecutar el comando', error);
-            await interaction.editReply({ content: 'No fue posible reproducir la canción', ephemeral: true });
-            return;
+            console.warn('Error al ejecutar el comando', error);
+            if (error.code === 10008) {
+                console.warn('Advertencia: No se pudo enviar la respuesta porque el mensaje fue eliminado');
+                //await interaction.channel.send('Lo siento, no pude leer tu cancion, enviala nuevamente.').catch(error => {console.log('No fue posible reproducir la cancion', error)})
+                return; // Importante: salir de la función para evitar intentar editar el mensaje eliminado
+            } else {
+                try {
+                    await interaction.editReply({ content: 'No fue posible reproducir la canción', ephemeral: true });
+                } catch (secondError) {
+                    console.warn('No se pudo enviar el mensaje de error', secondError);
+                    //await interaction.channel.send('Lo siento ocurrio un error inesperado, intentalo de nuevo!').catch(error => {console.log('No fue posible reproducir la cancion', error)})
+                }
+                return;
+            }
         }
     },
 };

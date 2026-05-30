@@ -54,7 +54,7 @@ module.exports = {
                     .setTitle(`La musica fue pausada`)
                     .setColor(parseInt('313850', 16))
                     .addFields(
-                        { name: `Estado Actual:`, value: `Pausada`, inline: true },
+                        //{ name: `Estado Actual:`, value: `Pausada`, inline: true },
                         { name: `Pedido por: `, value: `${userMention}`, inline: true }
                     )
                     .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })

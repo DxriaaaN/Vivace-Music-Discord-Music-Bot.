@@ -1,5 +1,4 @@
 module.exports = () => {
-    try {
     process.on('unhandledRejection', (error) => {
         console.error('Unhandled promise rejection:', error);
     });
@@ -11,8 +10,4 @@ module.exports = () => {
     process.on('uncaughtExceptionMonitor', (error) => {
         console.error('Uncaught exception (Monitor):', error);
     });
-
-    } catch(error) {
-        console.error('Hubo un problema en atrapar el error', error);
-    }
 };

@@ -7,9 +7,7 @@ module.exports = {
         .setDescription(`Usalo para que el bot se desconecte del canal`),
 
     run: async ({ client, interaction }) => {
-
         try {
-
             //Queue
             const queue = useQueue(interaction.guildId);
 
@@ -26,14 +24,14 @@ module.exports = {
 
             //Verificar si existe un canal de voz
             if (!userChannel) {
-                await interaction.editReply({ content: `${userMention} Necesitas estar en un canal de voz`, ephemeral: true });
+                await interaction.editReply(`${userMention} Necesitas estar en un canal de voz`);
                 return;
             };
 
             //Verificar mismo canal de voz
             if (queue || queue.currentTrack) {
                 if (clientChannel != channelId) {
-                    await interaction.editReply({ content: `${userMention} Debes estar en el mismo canal de voz`, ephemeral: true });
+                    await interaction.editReply(`${userMention} Debes estar en el mismo canal de voz`);
                     return;
                 };
             };
@@ -65,7 +63,7 @@ module.exports = {
 
         } catch (error) {
             console.log(`Hubo un error al ejecutar disconnect.js`, error);
-            await interaction.editReply({ content: `No pude abandonar el canal de voz`, ephemeral: true });
+            await interaction.editReply(`No pude abandonar el canal de voz`);
             return;
         }
     },

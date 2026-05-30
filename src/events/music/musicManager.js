@@ -1,12 +1,15 @@
-const musicPlayHandler = require('./reproduciendo');
-const musicDeleteHandler = require('./musicDelete');
-const musicDeleteMessageHandler = require('./musicDeleteMessage');
+const musicPlayHandler = require('./playedEmbed/embedPlayHandler');
+const musicDeleteHandler = require('./deleteMessages/musicDelete');
+const musicDeleteMessageHandler = require('./deleteMessages/musicDeleteMessage');
 const musicButtonsHandler = require('./buttons/musicButtons');
-const guildDelete = require('./guildDelete');
+const guildDelete = require('./deleteMessages/guildDelete');
 
 const interactionMessageHandler = require('./interactions/musicMention');
 const interactionMusicSearchHandler = require('./interactions/musicSearch');
 const interactionMusicTrigger = require('./interactions/musicTrigger');
+const {iniciarTriggerCollector } = require('./interactions/musicCollector');
+
+
 
 module.exports = (client) => {
     musicPlayHandler(client);
@@ -17,4 +20,5 @@ module.exports = (client) => {
     interactionMusicSearchHandler(client);
     interactionMusicTrigger(client);
     guildDelete(client);
+    iniciarTriggerCollector(client);
 };

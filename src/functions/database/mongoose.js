@@ -6,9 +6,9 @@ mongoose.set("strictQuery", true);
 dotenv.config({path: '../../../config/.env'});
 
 //MusicSettings
-const musicSchema = require('./schemas/musicSchema');
-const triggerSchema = require('./schemas/triggerSchema');
-const embedSchema = require('./schemas/embedSchema');
+const musicSchema = require('./models/musicSchema');
+const triggerSchema = require('./models/triggerSchema');
+const embedSchema = require('./models/embedSchema');
 
 module.exports = {
   async initializeMongoose() {
@@ -19,12 +19,13 @@ module.exports = {
       if (mongoose.connect) {
         console.log("Mongoose: Se establecio conexion con la base de datos")
       } else {
-        console.log('Mongoose: Fallo al conectar la base de datos :("')
+        console.error('Mongoose: Fallo al conectar la base de datos"')
       }
 
       return mongoose.connection;
     } catch (error) {
       console.error("Mongoose: Fallo al conectar la base de datos", error);
+      process.exitCode = 1;
     };
   },
   schemas: {

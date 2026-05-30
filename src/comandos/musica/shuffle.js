@@ -40,14 +40,14 @@ module.exports = {
             };
 
             // Mezclar la cola
-            const songsData = queue.tracks.toArray();
-            queue.shuffle();
+            const songsData = queue.tracks.size;
+            queue.tracks.shuffle();
             const shuffleEmbed = new EmbedBuilder()
                 .setColor(parseInt('313850', 16))
                 .setTitle(' Lista de reproducción mezclada 🎶')
                 .setDescription(`${userMention}La lista de reproducción ha sido mezclada exitosamente.`)
                 .addFields(
-                    { name: `Nº Canciones`, value: `${songsData.length ?? '0'}`, inline: true }
+                    { name: `Nº Canciones`, value: `${songsData ?? '0'}`, inline: true }
                 )
                 .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
                 .setTimestamp();
@@ -58,3 +58,4 @@ module.exports = {
         }
     },
 };
+

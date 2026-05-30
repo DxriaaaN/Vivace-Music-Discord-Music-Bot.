@@ -6,8 +6,7 @@ module.exports = {
         .setName('clear')
         .setDescription('Usalo para limpiar la lista de canciones actuales'),
 
-    run: async ({ client, interaction }) => {
-
+    run: async ( {client, interaction} ) => {
         try {
             //Usuario y Mencion
             const { user: author } = interaction;
@@ -40,10 +39,9 @@ module.exports = {
                 };
             };
 
-
             //Creacion de Embed
             const queuemsg = new EmbedBuilder()
-                .setTitle(`Cola limpiada exitosamente`)
+                .setTitle(`La cola fue borrada exitosamente!.`)
                 .addFields({ name: `Pedido por: `, value: `${userMention}` })
                 .setColor(parseInt('313850', 16))
                 .setFooter({ text: client.user.username, iconURL: `${client.user.displayAvatarURL()}` })
@@ -59,6 +57,7 @@ module.exports = {
             if (queue.currentTrack) {
                 queue.node.stop();
             }
+
             await interaction.editReply({ embeds: [queuemsg] });
 
         } catch (error) {

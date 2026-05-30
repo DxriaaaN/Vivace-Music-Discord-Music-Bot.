@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,11 +9,12 @@ module.exports = {
         .setDescription('Recarga todos los comandos disponibles en todas las carpetas.'),
     run: async ({ interaction }) => {
         try {
+            // cargar variables
+            dotenv.config({ path: './config/.env' });
 
             //Comprobacion Owner
-            if (interaction.user.id !== '432215088686956565') {
-                return interaction.editReply('No tienes permisos para usar este comando.');
-            }
+            const ID = process.env.IDOwner;
+            if (interaction.user.id !== `${ID}`) return interaction.editReply('No tienes permisos para usar este comando.');
 
             //Datos Usuario
             const { user: author } = interaction;
@@ -27,6 +29,7 @@ module.exports = {
                 { name: 'triggers', collection: interaction.client.triggerscommands},
                 { name: 'radio', collection: interaction.client.radiocommands},
             ];
+            
             //Para cada Carpeta X
             for (const folder of commandFolders) {
                 const commandFiles = fs.readdirSync(path.resolve(__dirname, `../${folder.name}`)).filter(file => file.endsWith('.js'));
@@ -37,10 +40,12 @@ module.exports = {
                     folder.collection.set(newCommand.data.name, newCommand);
                 }
             }
-            await interaction.editReply(`Todos los comandos han sido recargados ${userMention}` );
+
+            //Retorno Respuesta
+            await interaction.editReply(`${userMention} Todos los comandos han sido recargados` );
         } catch (error) {
             console.error('Error al recargar comandos:', error);
-            await interaction.editReply({ content: 'Ocurrió un error al recargar los comandos.', ephemeral: true });
+            await interaction.editReply('Ocurrió un error al recargar los comandos.');
             return;
         };
     },

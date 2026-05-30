@@ -1,4 +1,3 @@
-
 module.exports = (client) => {
 
     client.on('interactionCreate', async (interaction) => {

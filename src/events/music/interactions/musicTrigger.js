@@ -1,5 +1,5 @@
 // events/messageCreate.js
-const Trigger = require('../../../functions/database/schemas/triggerSchema');
+const Trigger = require('../../../functions/database/models/triggerSchema');
 
 module.exports = (client) => {
     client.on('messageCreate', async (message) => {
@@ -7,10 +7,16 @@ module.exports = (client) => {
 
         const content = message.content.toLowerCase();
         const guildId = message.guild.id;
+        const guild = message.guild
 
-        // Verificar si el usuario está en un canal de voz
-        if (!message.member.voice.channel) {
-            // Puedes enviar un mensaje al usuario si lo deseas
+        // Verificar si el bot está mencionado
+        const botMention = message.mentions.users.has(client.user.id);
+
+        // Verificar si el usuario está en un canal de voz y si el mensaje contiene la mención al bot
+        if (!message.member.voice.channel || !botMention) {
+            //const channelId = message.channel.id
+            //const channel = guild.channels.cache.get(channelId);
+            //channel.send("Necesitas estar en un canal de voz y mencionar al bot para usar este comando.");
             return;
         }
 
@@ -44,12 +50,13 @@ module.exports = (client) => {
 
                     try {
                         await playCommand.run({ client, interaction: fakeInteraction });
+                        return;
                     } catch (error) {
                         console.error(error);
+                        return;
                     }
                 }
-
-                break; // Salir del bucle después de encontrar el primer trigger
+                return;
             }
         }
     });

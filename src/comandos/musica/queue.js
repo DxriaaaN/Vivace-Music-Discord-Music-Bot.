@@ -52,7 +52,9 @@ run: async ({ client, interaction }) => {
             if (!songsData.length) {
                 const noSongsEmbed = new EmbedBuilder()
                     .setColor(parseInt('313850', 16))
-                    .setDescription(`No hay canciones en la lista para mostrar.`);
+                    .setTitle("Lista Vacia")
+                    .setDescription(`No hay canciones en la lista para mostrar.`)
+                    .setFooter({ text: client.user.username, iconURL: client.user.displayAvatarURL() });
                 return interaction.editReply({ ephemeral: true, embeds: [noSongsEmbed] });
             };
             
@@ -76,7 +78,7 @@ run: async ({ client, interaction }) => {
                             .join('\n')
                     )
                     .setColor(parseInt('313850', 16))
-                    .setFooter({ text: `Pagina ${page + 1} de ${maxPage} | Mostrando canciones ${start + 1} al ${end} de ${songsData.length}\n LSA Technology\`s` })
+                    .setFooter({ text: `Pagina ${page + 1} de ${maxPage} | Mostrando canciones ${start + 1} al ${end} de ${songsData.length}`, iconURL: client.user.displayAvatarURL() })
                     .setTimestamp();
                 embeds.push(embed);
             }
@@ -84,36 +86,39 @@ run: async ({ client, interaction }) => {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('firstBtn')
-                    .setEmoji('⏪')
-                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('<:SkipTotalIzq:1352153238895460352>')
+                    .setStyle(ButtonStyle.Primary)
                     .setDisabled(true),
                 new ButtonBuilder()
                     .setCustomId('previousBtn')
-                    .setEmoji('◀️')
-                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('<:SkipIzquierdo:1352153187750248510>')
+                    .setStyle(ButtonStyle.Primary)
                     .setDisabled(true),
                 new ButtonBuilder()
                     .setCustomId('nextBtn')
-                    .setEmoji('▶️')
-                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('<:SkipDerecha:1352153159895875595>')
+                    .setStyle(ButtonStyle.Primary)
                     .setDisabled(maxPage <= 1),
                 new ButtonBuilder()
                     .setCustomId('lastBtn')
-                    .setEmoji('⏩')
-                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('<:SkipTotal:1352153173598670848>')
+                    .setStyle(ButtonStyle.Primary)
                     .setDisabled(maxPage <= 1)
             );
-
+				
             const message = await interaction.editReply({
                 ephemeral: true,
                 embeds: [embeds[currentPage]],
                 components: [row]
             });
-
+            
+            if (!message) return
             const collector = message.createMessageComponentCollector({
+
                 filter: (ctx) => ctx.user.id === interaction.user.id,
                 time: 60_000
             });
+
 
             collector.on('collect', async (ctx) => {
                 switch (ctx.customId) {
@@ -150,7 +155,6 @@ run: async ({ client, interaction }) => {
             });
         } catch (error) {
             console.error('Error al ejecutar el comando queue.js', error);
-            await interaction.editReply( {content: 'Hubo un problema al mostrar la queue', ephemeral: true});
             return;
         };
     },
