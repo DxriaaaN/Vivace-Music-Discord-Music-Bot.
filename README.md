@@ -203,11 +203,15 @@ El proyecto está organizado para priorizar:
 Crear archivo:
 
 ```env
-BOT_TOKEN=
-CLIENT_SECRET=
-CLIENT_ID=
-MONGO_URI=
-OWNER_ID=
+tokenBot = // -----> Tu Token BOT
+
+clientSecret = // -----> Tu Client Secret BOT
+
+clientID = // -----> Tu Client ID BOT
+
+MONGO_CONNECTION= // -----> Tu URL de Conexión a MongoDB
+
+IDOwner = // -----> Tu ID de Usuario
 ```
 
 ---
