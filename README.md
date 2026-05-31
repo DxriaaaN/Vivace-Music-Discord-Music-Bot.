@@ -234,12 +234,18 @@ node .
 
 # 📸 Vista Previa
 
-Agregá screenshots aquí:
-
 * Canal Music Search
+<img width="1216" height="991" alt="image" src="https://github.com/user-attachments/assets/74fa794f-a5af-4363-bd6c-46c059aafcac" />
+
 * Controles interactivos
+<img width="507" height="204" alt="image" src="https://github.com/user-attachments/assets/a30b1234-3af9-496e-8bd7-c88263b26db0" />
+
 * Sistema de Triggers
+<img width="496" height="148" alt="image" src="https://github.com/user-attachments/assets/30f2800d-6742-4240-8afd-1319de3b8fc0" />
+
 * Setup automático
+<img width="655" height="138" alt="image" src="https://github.com/user-attachments/assets/19f73d7c-9f45-4043-94ea-f8e6f7c37652" />
+
 
 ---
 
