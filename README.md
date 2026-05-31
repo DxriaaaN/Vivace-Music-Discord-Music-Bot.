@@ -7,7 +7,7 @@
 
 <div align="center">
 
-<img src="./assets/logo.png" width="180"/>
+<img src="https://imgur.com/SGKJWUL.png" width="180"/>
 
 ### Tu experiencia musical en Discord, simplificada.
 
